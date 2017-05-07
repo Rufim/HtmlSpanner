@@ -194,7 +194,7 @@ public class TextUtil {
         REPLACEMENTS.put("&prop;", "\u221D");
         REPLACEMENTS.put("&Psi;", "\u03A8");
         REPLACEMENTS.put("&psi;", "\u03C8");
-        REPLACEMENTS.put("&quot;", "\u0022");
+        REPLACEMENTS.put("&quot;", String.valueOf('\u0022'));
         REPLACEMENTS.put("&radic;", "\u221A");
         REPLACEMENTS.put("&rang;", "\u232A");
         REPLACEMENTS.put("&raquo;", "\u00BB");

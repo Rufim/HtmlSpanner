@@ -25,11 +25,6 @@ import org.htmlcleaner.TagNode;
 import java.net.MalformedURLException;
 import java.net.URL;
 
-import ru.kazantsev.template.util.DynamicImageSpan;
-import ru.kazantsev.template.util.PicassoTransformImage;
-import ru.samlib.client.R;
-import ru.samlib.client.domain.Constants;
-
 /**
  * Created by Dmitry on 16.07.2015.
  */

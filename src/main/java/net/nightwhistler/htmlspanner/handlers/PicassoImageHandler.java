@@ -41,7 +41,7 @@ public class PicassoImageHandler extends TagNodeHandler {
 
     public PicassoImageHandler(final TextView textView, String baseDomain, @DrawableRes int imageCrop) {
         this.textView = textView;
-        this.picasso = new Picasso.Builder(textView.getContext()).build();
+        this.picasso = Picasso.get();
         this.baseDomain = baseDomain;
         this.imageCrop = imageCrop;
     }

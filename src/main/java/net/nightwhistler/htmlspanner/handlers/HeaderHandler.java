@@ -43,6 +43,17 @@ public class HeaderHandler extends StyledTextHandler {
 	private final StyleValue size;
     private final StyleValue margin;
 
+
+
+    /**
+     * Creates a HeaderHandler which gives
+     *
+     * @param size
+     */
+    public HeaderHandler(float size) {
+        this(size, 0f);
+    }
+
 	/**
 	 * Creates a HeaderHandler which gives
 	 * 

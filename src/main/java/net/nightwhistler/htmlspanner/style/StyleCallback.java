@@ -1,5 +1,7 @@
 package net.nightwhistler.htmlspanner.style;
 
+import android.os.Build;
+import android.text.Layout;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.text.style.*;
@@ -121,8 +123,10 @@ public class StyleCallback implements SpanCallback {
                     alignSpan = new AlignOppositeSpan();
                     break;
                 case JUSTIFY:
-                    if(useStyle.getTextView() != null) {
-                        alignSpan = new JustifySpan(useStyle.getTextView());
+                    if(spanner.getTextView() != null) {
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                            spanner.getTextView().setJustificationMode(Layout.JUSTIFICATION_MODE_INTER_WORD);
+                        }
                     }
                     break;
             }

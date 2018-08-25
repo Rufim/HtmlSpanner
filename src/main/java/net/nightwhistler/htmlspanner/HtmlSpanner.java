@@ -93,19 +93,10 @@ public class HtmlSpanner {
     }
 
     /**
-     * Creates a new HtmlSpanner using a default HtmlCleaner instance. with justify
-     */
-    public HtmlSpanner(TextView textView) {
-        this(createHtmlCleaner(), new SystemFontResolver());
-        this.textView = textView;
-    }
-
-    /**
      * Creates a new HtmlSpanner using a default HtmlCleaner instance. with Picasso Image handler and justify
      */
-    public HtmlSpanner(TextView textView, String baseDomain, @DrawableRes int imageCrop) {
+    public HtmlSpanner(String baseDomain, @DrawableRes int imageCrop) {
         this(createHtmlCleaner(), new SystemFontResolver());
-        this.textView = textView;
         this.imageCrop = imageCrop;
         this.baseDomain = baseDomain;
     }
@@ -272,6 +263,15 @@ public class HtmlSpanner {
         return this.handlers.get(tagName);
     }
 
+    public TextView getTextView() {
+        return textView;
+    }
+
+    public HtmlSpanner setTextView(TextView textView) {
+        this.textView = textView;
+        return this;
+    }
+
     /**
      * Creates spanned text from a TagNode.
      *
@@ -414,18 +414,16 @@ public class HtmlSpanner {
         registerHandler("br", brHandler);
 
         Style paragraphStyle = new Style()
-                .setDisplayStyle(Style.DisplayStyle.BLOCK)
-                .setMarginBottom(
-                        new StyleValue(1.0f, StyleValue.Unit.EM));
-
-        if(textView != null) {
-            paragraphStyle = paragraphStyle.setTextView(textView);
-        }
+                .setDisplayStyle(Style.DisplayStyle.BLOCK);
 
         TagNodeHandler pHandler = new BorderAttributeHandler(wrap(new StyledTextHandler(paragraphStyle)));
 
         registerHandler("p", pHandler);
         registerHandler("div", pHandler);
+
+        TagNodeHandler spanHandler = wrap(new StyledTextHandler(new Style()));
+
+        registerHandler("span", spanHandler);
 
         registerHandler("h1", wrap(new HeaderHandler(1.5f, 0.5f)));
         registerHandler("h2", wrap(new HeaderHandler(1.4f, 0.6f)));

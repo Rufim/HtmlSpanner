@@ -22,7 +22,6 @@ import java.io.Reader;
 import java.util.HashMap;
 import java.util.Map;
 
-import android.util.Log;
 import net.nightwhistler.htmlspanner.exception.ParsingCancelledException;
 import net.nightwhistler.htmlspanner.handlers.*;
 import net.nightwhistler.htmlspanner.handlers.attributes.AlignmentAttributeHandler;
@@ -37,8 +36,10 @@ import org.htmlcleaner.ContentNode;
 import org.htmlcleaner.HtmlCleaner;
 import org.htmlcleaner.TagNode;
 
+import android.support.annotation.DrawableRes;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
+import android.widget.TextView;
 
 /**
  * HtmlSpanner provides an alternative to Html.fromHtml() from the Android
@@ -67,6 +68,12 @@ public class HtmlSpanner {
 
     private FontResolver fontResolver;
 
+    private TextView textView;
+
+    private String baseDomain;
+
+    private int imageCrop = -1;
+
     /**
      * Switch to determine if CSS is used
      */
@@ -83,6 +90,24 @@ public class HtmlSpanner {
      */
     public HtmlSpanner() {
         this(createHtmlCleaner(), new SystemFontResolver());
+    }
+
+    /**
+     * Creates a new HtmlSpanner using a default HtmlCleaner instance. with justify
+     */
+    public HtmlSpanner(TextView textView) {
+        this(createHtmlCleaner(), new SystemFontResolver());
+        this.textView = textView;
+    }
+
+    /**
+     * Creates a new HtmlSpanner using a default HtmlCleaner instance. with Picasso Image handler and justify
+     */
+    public HtmlSpanner(TextView textView, String baseDomain, @DrawableRes int imageCrop) {
+        this(createHtmlCleaner(), new SystemFontResolver());
+        this.textView = textView;
+        this.imageCrop = imageCrop;
+        this.baseDomain = baseDomain;
     }
 
     /**
@@ -393,6 +418,9 @@ public class HtmlSpanner {
                 .setMarginBottom(
                         new StyleValue(1.0f, StyleValue.Unit.EM));
 
+        if(textView != null) {
+            paragraphStyle = paragraphStyle.setTextView(textView);
+        }
 
         TagNodeHandler pHandler = new BorderAttributeHandler(wrap(new StyledTextHandler(paragraphStyle)));
 
@@ -432,8 +460,13 @@ public class HtmlSpanner {
 
         registerHandler("li", new ListItemHandler());
 
-        registerHandler("a", new LinkHandler());
-        registerHandler("img", new ImageHandler());
+        registerHandler("a", new LinkHandler(baseDomain));
+
+        if(textView != null) {
+            registerHandler("img", new PicassoImageHandler(textView, baseDomain, imageCrop));
+        } else {
+            registerHandler("img", new ImageHandler());
+        }
 
         registerHandler("font", new FontHandler() );
 

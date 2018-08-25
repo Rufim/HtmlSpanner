@@ -24,6 +24,9 @@ import org.htmlcleaner.TagNode;
 import android.text.SpannableStringBuilder;
 import android.text.style.URLSpan;
 
+import java.net.MalformedURLException;
+import java.net.URL;
+
 /**
  * Creates clickable links.
  * 
@@ -32,11 +35,31 @@ import android.text.style.URLSpan;
  */
 public class LinkHandler extends TagNodeHandler {
 
+	private final String baseDomain;
+
+	public LinkHandler(String baseDomain) {
+		this.baseDomain = baseDomain;
+	}
+
 	@Override
 	public void handleTagNode(TagNode node, SpannableStringBuilder builder,
 			int start, int end, SpanStack spanStack) {
 
 		final String href = node.getAttributeByName("href");
-		spanStack.pushSpan(new URLSpan(href), start, end);
+		URL url = null;
+		try {
+			url = new URL(href);
+		} catch (MalformedURLException ex) {
+			if(baseDomain != null) {
+				try {
+					url = new URL(baseDomain + "/" + href);
+				} catch (MalformedURLException ignore) { }
+			}
+		}
+		if(url != null) {
+			spanStack.pushSpan(new URLSpan(url.toString()), start, end);
+		} else {
+			spanStack.pushSpan(new URLSpan(href), start, end);
+		}
 	}
 }

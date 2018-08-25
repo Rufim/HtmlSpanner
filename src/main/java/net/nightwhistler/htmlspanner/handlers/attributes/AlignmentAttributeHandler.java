@@ -48,6 +48,8 @@ public class AlignmentAttributeHandler extends WrappingStyleHandler {
             style =  style.setTextAlignment(Style.TextAlignment.CENTER);
 		} else if ( "left".equalsIgnoreCase(align) ) {
             style =  style.setTextAlignment(Style.TextAlignment.LEFT);
+		} else if ( "justify".equalsIgnoreCase(align) ) {
+			style =  style.setTextAlignment(Style.TextAlignment.JUSTIFY);
 		}
 		
 		super.handleTagNode(node, builder, start, end, style, spanStack);

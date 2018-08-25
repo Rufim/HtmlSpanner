@@ -108,7 +108,7 @@ public class StyleCallback implements SpanCallback {
 
         if ( useStyle.getTextAlignment() != null ) {
 
-            AlignmentSpan alignSpan = null;
+           Object alignSpan = null;
 
             switch ( useStyle.getTextAlignment()  ) {
                 case LEFT:
@@ -120,12 +120,17 @@ public class StyleCallback implements SpanCallback {
                 case RIGHT:
                     alignSpan = new AlignOppositeSpan();
                     break;
+                case JUSTIFY:
+                    if(useStyle.getTextView() != null) {
+                        alignSpan = new JustifySpan(useStyle.getTextView());
+                    }
+                    break;
             }
 
-            //Log.d("StyleCallback", "Applying AlignmentSpan from " + start + " to " + end + " on text " + builder.subSequence(start, end) );
-            builder.setSpan(alignSpan, start, end,
-                    Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-
+            if(alignSpan != null) {
+                //Log.d("StyleCallback", "Applying AlignmentSpan from " + start + " to " + end + " on text " + builder.subSequence(start, end) );
+                builder.setSpan(alignSpan, start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+            }
         }
 
 

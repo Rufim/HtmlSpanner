@@ -22,7 +22,7 @@ repositories {
 dependencies {
     testImplementation 'junit:junit:4.12'
     implementation "com.squareup.picasso:picasso:2.71828"
-    implementation 'net.sourceforge.htmlcleaner:htmlcleaner:2.16'
+    api 'net.sourceforge.htmlcleaner:htmlcleaner:2.16'
     implementation "com.github.raisercostin:osbcp-css-parser:cssparser-1.7"
 }
 

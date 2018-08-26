@@ -10,6 +10,7 @@ import android.support.annotation.DrawableRes;
 import android.text.Html;
 import android.text.SpannableStringBuilder;
 import android.text.style.DynamicDrawableSpan;
+import android.text.style.ImageSpan;
 import android.util.Base64;
 import android.widget.TextView;
 
@@ -30,20 +31,14 @@ import java.net.URL;
  */
 public class PicassoImageHandler extends TagNodeHandler {
 
-    final TextView textView;
     final Picasso picasso;
-    final String baseDomain;
-    final int imageCrop;
 
     int maxWidth = -1;
 
     int alignment = DynamicImageSpan.ALIGN_BOTTOM;
 
-    public PicassoImageHandler(final TextView textView, String baseDomain, @DrawableRes int imageCrop) {
-        this.textView = textView;
+    public PicassoImageHandler() {
         this.picasso = Picasso.get();
-        this.baseDomain = baseDomain;
-        this.imageCrop = imageCrop;
     }
 
     public int getMaxWidth() {
@@ -71,30 +66,38 @@ public class PicassoImageHandler extends TagNodeHandler {
 
     @Override
     public void handleTagNode(TagNode tagNode, final SpannableStringBuilder builder, final int start, int end, SpanStack stack) {
-        builder.append("￼");
-        int width = parseDimen(tagNode.getAttributeByName("width"), -1);
-        int height = parseDimen(tagNode.getAttributeByName("height"), -1);
-        Drawable drawable = null;
-        if(imageCrop > 0) {
-            drawable = textView.getResources().getDrawable(imageCrop);
+        final TextView textView = getSpanner().getTextView();
+        final int imageCrop = getSpanner().getImageCrop();
+        if(textView != null && picasso != null) {
+            builder.append("￼");
+            float density = textView.getResources().getDisplayMetrics().density;
+            int width = (int) (parseDimen(tagNode.getAttributeByName("width"), -1) * density);
+            int height = (int) (parseDimen(tagNode.getAttributeByName("height"), -1) * density);
+            Drawable drawable = null;
+            if (imageCrop > 0) {
+                drawable = textView.getResources().getDrawable(imageCrop);
+            } else {
+                drawable = new ColorDrawable(textView.getResources().getColor(android.R.color.darker_gray));
+            }
+            int textSize = (int) (textView.getTextSize() * 1.25);
+            if (width > calculateMaxWidth(textView)) {
+                width = calculateMaxWidth(textView);
+            }
+            if (width < 0) {
+                width = textSize;
+                height = textSize;
+            }
+            drawable.setBounds(0, 0, width, height);
+            final DynamicImageSpan imageSpan = new DynamicImageSpan(drawable, alignment);
+            stack.pushSpan(imageSpan, start, builder.length());
+            new DynamicImageSpanAsync(imageSpan, textView).execute(tagNode);
         } else {
-            drawable = new ColorDrawable(textView.getResources().getColor(android.R.color.darker_gray));
+            ImageHandler imageHandler = new ImageHandler();
+            imageHandler.handleTagNode(tagNode, builder, start, end , stack);
         }
-        int textSize = (int) (textView.getTextSize() * 1.25);
-        if (width > calculateMaxWidth()) {
-            width = calculateMaxWidth();
-        }
-        if (width < 0) {
-            width = textSize;
-            height = textSize;
-        }
-        drawable.setBounds(0, 0, width, height);
-        final DynamicImageSpan imageSpan = new DynamicImageSpan(drawable, alignment);
-        stack.pushSpan(imageSpan, start, builder.length());
-        new DynamicImageSpanAsync(imageSpan, textView).execute(tagNode);
     }
 
-    private Drawable getDrawable(final Bitmap bitmap) {
+    private Drawable getDrawable(TextView textView, final Bitmap bitmap) {
         if (bitmap != null) {
             Drawable drawable = new BitmapDrawable(textView.getResources(), bitmap);
             drawable.setBounds(0, 0, bitmap.getWidth() - 1, bitmap.getHeight() - 1);
@@ -104,7 +107,7 @@ public class PicassoImageHandler extends TagNodeHandler {
         }
     }
 
-    public int calculateMaxWidth() {
+    public int calculateMaxWidth(TextView textView) {
         if (maxWidth < 0) {
             int loc[] = new int[2];
             textView.getLocationOnScreen(loc);
@@ -148,18 +151,18 @@ public class PicassoImageHandler extends TagNodeHandler {
                     if (src != null) {
                         int width = parseDimen(tag.getAttributeByName("width"), -1);
                         int height = parseDimen(tag.getAttributeByName("height"), -1);
-                        PicassoTransformImage transformImage = new PicassoTransformImage(width, height, calculateMaxWidth(), src.hashCode() + "",  textView.getContext().getResources().getDisplayMetrics().density);
+                        PicassoTransformImage transformImage = new PicassoTransformImage(width, height, calculateMaxWidth(textView), src.hashCode() + "", textView.getResources().getDisplayMetrics().density);
                         if (!src.contains("base64,")) {
                             URL url = null;
                             try {
                                 url = new URL(src);
                             } catch (MalformedURLException ex) {
-                                if(baseDomain != null) {
-                                    url = new URL(baseDomain + "/" + src);
+                                if (getSpanner().getBaseDomain() != null) {
+                                    url = new URL( getSpanner().getBaseDomain() + "/" + src);
                                 }
                             }
-                            if(url != null)
-                            return picasso.load(url.toString()).transform(transformImage).get();
+                            if (url != null)
+                                return picasso.load(url.toString()).transform(transformImage).get();
                         } else {
                             byte[] decodedString = Base64.decode(src.substring(src.indexOf("base64,") + 7), Base64.DEFAULT);
                             return transformImage.transform(BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length));
@@ -175,7 +178,7 @@ public class PicassoImageHandler extends TagNodeHandler {
 
         @Override
         protected void onPostExecute(final Bitmap bitmap) {
-            imageSpan.setDrawable(getDrawable(bitmap));
+            imageSpan.setDrawable(getDrawable(textView, bitmap));
             if (textView != null) {
                 textView.setText(textView.getText());
             }

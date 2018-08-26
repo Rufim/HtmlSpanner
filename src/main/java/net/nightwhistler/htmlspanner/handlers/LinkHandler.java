@@ -35,24 +35,23 @@ import java.net.URL;
  */
 public class LinkHandler extends TagNodeHandler {
 
-	private final String baseDomain;
 
-	public LinkHandler(String baseDomain) {
-		this.baseDomain = baseDomain;
+	protected String getHref(TagNode node) {
+		return node.getAttributeByName("href");
 	}
 
 	@Override
 	public void handleTagNode(TagNode node, SpannableStringBuilder builder,
 			int start, int end, SpanStack spanStack) {
 
-		final String href = node.getAttributeByName("href");
+		final String href = getHref(node);
 		URL url = null;
 		try {
 			url = new URL(href);
 		} catch (MalformedURLException ex) {
-			if(baseDomain != null) {
+			if(getSpanner().getBaseDomain() != null) {
 				try {
-					url = new URL(baseDomain + "/" + href);
+					url = new URL(getSpanner().getBaseDomain() + "/" + href);
 				} catch (MalformedURLException ignore) { }
 			}
 		}

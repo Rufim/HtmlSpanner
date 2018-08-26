@@ -276,7 +276,7 @@ public class HtmlSpanner {
     }
 
     /**
-     * Sets the sed textView
+     * Sets the textView for img handler
      *
      * @param textView
      * @return self
@@ -298,6 +298,44 @@ public class HtmlSpanner {
 
     public void setContainJustifyText(boolean containJustifyText) {
         this.containJustifyText = containJustifyText;
+    }
+
+
+    /**
+     * Sets the base domain for img and a handlers
+     *
+     * @param baseDomain
+     */
+    public void setBaseDomain(String baseDomain) {
+        this.baseDomain = baseDomain;
+    }
+
+    /**
+     * Gets the currently use base domain
+     *
+     * @return base domain
+     */
+    public String getBaseDomain() {
+        return baseDomain;
+    }
+
+
+    /**
+     * Sets the image crop for img handler
+     *
+     * @param imageCrop
+     */
+    public void setImageCrop(@DrawableRes  int imageCrop) {
+        this.imageCrop = imageCrop;
+    }
+
+    /**
+     * Gets the currently use image crop
+     *
+     * @return image res id
+     */
+    public int getImageCrop() {
+        return imageCrop;
     }
 
     /**
@@ -486,13 +524,9 @@ public class HtmlSpanner {
 
         registerHandler("li", new ListItemHandler());
 
-        registerHandler("a", new LinkHandler(baseDomain));
+        registerHandler("a", new LinkHandler());
 
-        if(textView != null) {
-            registerHandler("img", new PicassoImageHandler(textView, baseDomain, imageCrop));
-        } else {
-            registerHandler("img", new ImageHandler());
-        }
+        registerHandler("img", new PicassoImageHandler());
 
         registerHandler("font", new FontHandler() );
 

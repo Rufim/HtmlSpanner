@@ -64,9 +64,9 @@ public class JustifySpan extends ReplacementSpan {
         CharSequence actualText = text.subSequence(start, end);
 
         // Prune trailing whitespace characters from line
-        //if (Character.isWhitespace(actualText.charAt(actualText.length() - 1))) {
-        //    actualText = actualText.subSequence(0, actualText.length() - 1);
-        //}
+        if (Character.isWhitespace(actualText.charAt(actualText.length() - 1))) {
+           actualText = actualText.subSequence(0, actualText.length() - 1);
+        }
 
         if(lineWidth <= 0) {
            lineWidth = canvas.getWidth();

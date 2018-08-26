@@ -40,25 +40,32 @@ public class LinkHandler extends TagNodeHandler {
 		return node.getAttributeByName("href");
 	}
 
+	protected URLSpan newSpan(String url) {
+		return new URLSpan(url);
+	}
+
 	@Override
 	public void handleTagNode(TagNode node, SpannableStringBuilder builder,
 			int start, int end, SpanStack spanStack) {
 
 		final String href = getHref(node);
 		URL url = null;
-		try {
-			url = new URL(href);
-		} catch (MalformedURLException ex) {
-			if(getSpanner().getBaseDomain() != null) {
-				try {
-					url = new URL(getSpanner().getBaseDomain() + "/" + href);
-				} catch (MalformedURLException ignore) { }
+		if(href != null && !href.startsWith("#")) {
+			try {
+				url = new URL(href);
+			} catch (MalformedURLException ex) {
+				if (getSpanner().getBaseDomain() != null) {
+					try {
+						url = new URL(getSpanner().getBaseDomain() + "/" + href);
+					} catch (MalformedURLException ignore) {
+					}
+				}
 			}
 		}
 		if(url != null) {
-			spanStack.pushSpan(new URLSpan(url.toString()), start, end);
+			spanStack.pushSpan(newSpan(url.toString()), start, end);
 		} else {
-			spanStack.pushSpan(new URLSpan(href), start, end);
+			spanStack.pushSpan(newSpan(href), start, end);
 		}
 	}
 }

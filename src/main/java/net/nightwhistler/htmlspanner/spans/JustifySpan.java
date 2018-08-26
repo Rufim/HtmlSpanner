@@ -37,14 +37,9 @@ public class JustifySpan extends ReplacementSpan {
 
     private float lineWidth;
     private float whitespaceWeight;
-    private TextView textView;
-
-    public JustifySpan(TextView textView) {
-        this(textView.getWidth() - textView.getPaddingLeft() - textView.getPaddingRight(), -1);
-    }
 
     public JustifySpan(float lineWidth) {
-        this(lineWidth, -1);
+        this(lineWidth, 0.1f);
     }
 
     public JustifySpan(float lineWidth, float whitespaceWeight) {
@@ -55,6 +50,11 @@ public class JustifySpan extends ReplacementSpan {
     /** Since this span justifies text, it will always take the full line width. */
     @Override
     public int getSize(Paint paint, CharSequence text, int start, int end, Paint.FontMetricsInt fm) {
+        float textWidth = paint.measureText(text, 0, text.length());
+        float differenceWidth = lineWidth - textWidth;
+        if (differenceWidth <= 0 || lineWidth  * 0.7 < differenceWidth) {
+            return (int) textWidth;
+        }
         return (int) lineWidth;
     }
 
@@ -64,18 +64,19 @@ public class JustifySpan extends ReplacementSpan {
         CharSequence actualText = text.subSequence(start, end);
 
         // Prune trailing whitespace characters from line
-        if (Character.isWhitespace(actualText.charAt(actualText.length() - 1))) {
-            actualText = actualText.subSequence(0, actualText.length() - 1);
-        }
-        if(lineWidth < 0) {
-            lineWidth = canvas.getWidth();
+        //if (Character.isWhitespace(actualText.charAt(actualText.length() - 1))) {
+        //    actualText = actualText.subSequence(0, actualText.length() - 1);
+        //}
+
+        if(lineWidth <= 0) {
+           lineWidth = canvas.getWidth();
         }
 
         float textWidth = paint.measureText(actualText, 0, actualText.length());
         float differenceWidth = lineWidth - textWidth;
 
         // If there's no available space, draw the text as usual.
-        if (differenceWidth <= 0) {
+        if (differenceWidth <= 0 || lineWidth  * 0.7 < differenceWidth) {
             canvas.drawText(text, start, end, x, y, paint);
             return;
         }

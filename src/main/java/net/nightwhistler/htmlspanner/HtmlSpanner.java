@@ -74,6 +74,8 @@ public class HtmlSpanner {
 
     private int imageCrop = -1;
 
+    private boolean containJustifyText;
+
     /**
      * Switch to determine if CSS is used
      */
@@ -263,13 +265,39 @@ public class HtmlSpanner {
         return this.handlers.get(tagName);
     }
 
+
+    /**
+     * Gets the currently use TextView
+     *
+     * @return textView
+     */
     public TextView getTextView() {
         return textView;
     }
 
+    /**
+     * Sets the sed textView
+     *
+     * @param textView
+     * @return self
+     */
     public HtmlSpanner setTextView(TextView textView) {
         this.textView = textView;
         return this;
+    }
+
+    /**
+     * After parse determinate if text contain justify text
+     *
+     * @return
+     */
+    public boolean isContainJustifyText() {
+        return containJustifyText;
+    }
+
+
+    public void setContainJustifyText(boolean containJustifyText) {
+        this.containJustifyText = containJustifyText;
     }
 
     /**

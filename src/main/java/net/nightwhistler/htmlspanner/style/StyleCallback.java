@@ -126,6 +126,7 @@ public class StyleCallback implements SpanCallback {
                     if(spanner.getTextView() != null) {
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                             spanner.getTextView().setJustificationMode(Layout.JUSTIFICATION_MODE_INTER_WORD);
+                            spanner.setContainJustifyText(true);
                         }
                     }
                     break;

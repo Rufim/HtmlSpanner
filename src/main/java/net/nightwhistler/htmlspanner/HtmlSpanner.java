@@ -19,6 +19,7 @@ package net.nightwhistler.htmlspanner;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
+import java.lang.ref.WeakReference;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -75,6 +76,10 @@ public class HtmlSpanner {
     private int imageCrop = -1;
 
     private boolean containJustifyText;
+
+    private WeakReference<String> lastString;
+
+    private WeakReference<Spannable> parsed;
 
     /**
      * Switch to determine if CSS is used
@@ -216,11 +221,17 @@ public class HtmlSpanner {
      * @return a Spanned version of the text.
      */
     public Spannable fromHtml(String html) {
-        return fromTagNode(this.htmlCleaner.clean(html), null);
+        return fromHtml(html, null);
     }
 
     public Spannable fromHtml(String html, CancellationCallback cancellationCallback) {
-        return fromTagNode(this.htmlCleaner.clean(html), cancellationCallback);
+        if(lastString != null && parsed != null && lastString.get() != null && parsed.get() != null &&  html == lastString.get()) {
+             return parsed.get();
+        }
+        Spannable spannable = fromTagNode(this.htmlCleaner.clean(html), cancellationCallback);
+        lastString = new WeakReference<>(html);
+        parsed = new WeakReference<>(spannable);
+        return spannable;
     }
 
     /**

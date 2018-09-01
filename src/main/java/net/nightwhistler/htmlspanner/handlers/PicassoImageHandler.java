@@ -113,7 +113,7 @@ public class PicassoImageHandler extends TagNodeHandler {
             textView.getLocationOnScreen(loc);
             int maxWidth = textView.getResources().getDisplayMetrics().widthPixels
                     - loc[0];
-            int textViewWidth = textView.getWidth();
+            int textViewWidth = textView.getWidth() - textView.getPaddingLeft() - textView.getPaddingRight();
             if (textViewWidth > 0) {
                 maxWidth = Math.min(maxWidth, textViewWidth);
             }

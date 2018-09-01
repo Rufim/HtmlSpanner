@@ -14,6 +14,7 @@ public class TextUtil {
             .compile("(&[a-z]*;|&#x?([a-f]|[A-F]|[0-9])*;)");
 
     private static Map<String, String> REPLACEMENTS = new HashMap<String, String>();
+    private static Map<String, String> REPLACEMENTS_WHITESPACE = new HashMap<String, String>();
 
     static {
         REPLACEMENTS.put("&Aacute;", "\u00C1");
@@ -268,6 +269,9 @@ public class TextUtil {
         REPLACEMENTS.put("&zeta;", "\u03B6");
         REPLACEMENTS.put("&zwj;", "\u200D");
         REPLACEMENTS.put("&zwnj;", "\u200C");
+        REPLACEMENTS_WHITESPACE.putAll(REPLACEMENTS);
+        REPLACEMENTS_WHITESPACE.put("", " ");
+        REPLACEMENTS_WHITESPACE.put("\n", " ");
     }
 
     /**
@@ -281,16 +285,15 @@ public class TextUtil {
                                              boolean preserveFormatting) {
         StringBuffer result = new StringBuffer();
 
-        Map<String, String> replacements = new HashMap<String, String>(
-                REPLACEMENTS);
+        Map<String, String> replacements;
         Matcher matcher;
 
         if (preserveFormatting) {
             matcher = SPECIAL_CHAR_NO_WHITESPACE.matcher(aText);
+            replacements = REPLACEMENTS;
         } else {
             matcher = SPECIAL_CHAR_WHITESPACE.matcher(aText);
-            replacements.put("", " ");
-            replacements.put("\n", " ");
+            replacements = REPLACEMENTS_WHITESPACE;
         }
 
         while (matcher.find()) {

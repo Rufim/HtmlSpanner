@@ -6,11 +6,12 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
-import android.support.annotation.DrawableRes;
+import android.os.SystemClock;
 import android.text.Html;
+import android.text.Spannable;
+import android.text.SpannableString;
 import android.text.SpannableStringBuilder;
 import android.text.style.DynamicDrawableSpan;
-import android.text.style.ImageSpan;
 import android.util.Base64;
 import android.widget.TextView;
 
@@ -23,6 +24,7 @@ import net.nightwhistler.htmlspanner.util.PicassoTransformImage;
 
 import org.htmlcleaner.TagNode;
 
+import java.lang.ref.WeakReference;
 import java.net.MalformedURLException;
 import java.net.URL;
 
@@ -68,7 +70,7 @@ public class PicassoImageHandler extends TagNodeHandler {
     public void handleTagNode(TagNode tagNode, final SpannableStringBuilder builder, final int start, int end, SpanStack stack) {
         final TextView textView = getSpanner().getTextView();
         final int imageCrop = getSpanner().getImageCrop();
-        if(textView != null && picasso != null) {
+        if (textView != null && picasso != null) {
             builder.append("￼");
             float density = textView.getResources().getDisplayMetrics().density;
             int width = (int) (parseDimen(tagNode.getAttributeByName("width"), -1) * density);
@@ -90,10 +92,10 @@ public class PicassoImageHandler extends TagNodeHandler {
             drawable.setBounds(0, 0, width, height);
             final DynamicImageSpan imageSpan = new DynamicImageSpan(drawable, alignment);
             stack.pushSpan(imageSpan, start, builder.length());
-            new DynamicImageSpanAsync(imageSpan, textView).execute(tagNode);
+            new DynamicImageSpanAsync(start, builder.length(), textView).execute(tagNode);
         } else {
             ImageHandler imageHandler = new ImageHandler();
-            imageHandler.handleTagNode(tagNode, builder, start, end , stack);
+            imageHandler.handleTagNode(tagNode, builder, start, end, stack);
         }
     }
 
@@ -117,7 +119,7 @@ public class PicassoImageHandler extends TagNodeHandler {
             if (textViewWidth > 0) {
                 maxWidth = Math.min(maxWidth, textViewWidth);
             }
-            this.maxWidth = maxWidth;
+            return maxWidth;
         }
         return maxWidth;
     }
@@ -133,13 +135,14 @@ public class PicassoImageHandler extends TagNodeHandler {
 
     private class DynamicImageSpanAsync extends AsyncTask<TagNode, Void, Bitmap> {
 
+        final int start;
+        final int length;
+        final WeakReference<TextView> textView;
 
-        final DynamicImageSpan imageSpan;
-        final TextView textView;
-
-        private DynamicImageSpanAsync(DynamicImageSpan imageSpan, TextView textView) {
-            this.imageSpan = imageSpan;
-            this.textView = textView;
+        private DynamicImageSpanAsync(int start, int length, TextView textView) {
+            this.start = start;
+            this.length = length;
+            this.textView = new WeakReference<>(textView);
         }
 
         @Override
@@ -148,7 +151,8 @@ public class PicassoImageHandler extends TagNodeHandler {
                 if (meh.length > 0) {
                     TagNode tag = meh[0];
                     String src = Html.fromHtml(tag.getAttributeByName("src")).toString().replace("\"", "");
-                    if (src != null) {
+                    TextView textView;
+                    if (src != null && (textView = this.textView.get()) != null) {
                         int width = parseDimen(tag.getAttributeByName("width"), -1);
                         int height = parseDimen(tag.getAttributeByName("height"), -1);
                         PicassoTransformImage transformImage = new PicassoTransformImage(width, height, calculateMaxWidth(textView), src.hashCode() + "", textView.getResources().getDisplayMetrics().density);
@@ -158,7 +162,7 @@ public class PicassoImageHandler extends TagNodeHandler {
                                 url = new URL(src);
                             } catch (MalformedURLException ex) {
                                 if (getSpanner().getBaseDomain() != null) {
-                                    url = new URL( getSpanner().getBaseDomain() + "/" + src);
+                                    url = new URL(getSpanner().getBaseDomain() + "/" + src);
                                 }
                             }
                             if (url != null)
@@ -168,7 +172,6 @@ public class PicassoImageHandler extends TagNodeHandler {
                             return transformImage.transform(BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length));
                         }
                     }
-
                 }
             } catch (Exception e) {
                 return null;
@@ -178,9 +181,21 @@ public class PicassoImageHandler extends TagNodeHandler {
 
         @Override
         protected void onPostExecute(final Bitmap bitmap) {
-            imageSpan.setDrawable(getDrawable(textView, bitmap));
-            if (textView != null) {
-                textView.setText(textView.getText());
+            TextView textView;
+            if((textView = this.textView.get()) != null) {
+                CharSequence sequence = textView.getText();
+                if(sequence instanceof SpannableString) {
+                    SpannableString spannableString = (SpannableString) sequence;
+                    DynamicImageSpan[] spans = spannableString.getSpans(start, length, DynamicImageSpan.class);
+                    if(spans.length > 0) {
+                        for (DynamicImageSpan span : spans) {
+                            spannableString.removeSpan(span);
+                        }
+                        Drawable newImage = getDrawable(textView, bitmap);
+                        DynamicImageSpan span = new DynamicImageSpan(newImage);
+                        spannableString.setSpan(span, start, length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+                    }
+                }
             }
         }
     }

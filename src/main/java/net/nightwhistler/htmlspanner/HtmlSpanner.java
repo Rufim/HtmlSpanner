@@ -69,7 +69,7 @@ public class HtmlSpanner {
 
     private FontResolver fontResolver;
 
-    private TextView textView;
+    private WeakReference<TextView> textView;
 
     private String baseDomain;
 
@@ -283,7 +283,7 @@ public class HtmlSpanner {
      * @return textView
      */
     public TextView getTextView() {
-        return textView;
+        return textView.get();
     }
 
     /**
@@ -293,7 +293,7 @@ public class HtmlSpanner {
      * @return self
      */
     public HtmlSpanner setTextView(TextView textView) {
-        this.textView = textView;
+        this.textView = new WeakReference<>(textView);
         return this;
     }
 

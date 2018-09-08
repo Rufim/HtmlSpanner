@@ -42,11 +42,11 @@ public class PicassoTransformImage implements Transformation {
             scaleY = ((float) height / bitmapHeight);
             scaleX = ((float) width / bitmapWidth);
         }
+        scaleX *= scale;
+        scaleY *= scale;
         if (scaleX * bitmapWidth > maxWidth) {
             scaleX = scaleY = ((float) maxWidth / bitmapWidth);
         }
-        scaleX *= scale;
-        scaleY *= scale;
         Bitmap scaledBitmap;
         if (scaleX != 1 || scaleY != 1) {
             Matrix matrix = new Matrix();

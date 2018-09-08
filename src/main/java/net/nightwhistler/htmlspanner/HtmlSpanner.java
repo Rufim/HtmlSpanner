@@ -283,7 +283,7 @@ public class HtmlSpanner {
      * @return textView
      */
     public TextView getTextView() {
-        return textView.get();
+        return textView != null ? textView.get() : null;
     }
 
     /**

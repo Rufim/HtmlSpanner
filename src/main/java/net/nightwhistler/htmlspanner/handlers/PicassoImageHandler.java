@@ -100,7 +100,7 @@ public class PicassoImageHandler extends TagNodeHandler {
     }
 
     private Drawable getDrawable(TextView textView, final Bitmap bitmap) {
-        if (bitmap != null) {
+        if (bitmap != null && !bitmap.isRecycled()) {
             Drawable drawable = new BitmapDrawable(textView.getResources(), bitmap);
             drawable.setBounds(0, 0, bitmap.getWidth() - 1, bitmap.getHeight() - 1);
             return drawable;

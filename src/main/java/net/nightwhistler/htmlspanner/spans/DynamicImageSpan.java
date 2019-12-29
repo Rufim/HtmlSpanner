@@ -120,7 +120,7 @@ public class DynamicImageSpan extends ReplacementSpan {
     public Drawable getDrawable() {
         Drawable drawable = null;
 
-        if (mDrawable != null) {
+        if (mDrawable != null && !(mDrawable instanceof BitmapDrawable && ((BitmapDrawable) mDrawable).getBitmap().isRecycled())) {
             drawable = mDrawable;
         } else if (mContentUri != null) {
             Bitmap bitmap = null;
